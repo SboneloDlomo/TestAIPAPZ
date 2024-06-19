@@ -1,0 +1,460 @@
+{
+	"info": {
+		"_postman_id": "850eeee6-6784-4962-b123-1b921a3ae6c3",
+		"name": "APZ-KYC-API (QA environment)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1374399"
+	},
+	"item": [
+		{
+			"name": "01 Get all Customers",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/customers",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"customers"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		},
+		{
+			"name": "02 Create Customer",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "RequestedBy",
+						"value": "My test user",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"id\": \"9501015276087\",\n  \"firstName\": \"Generic\",\n  \"middleNames\": \"Test\",\n  \"lastName\": \"Customer\",\n  \"gender\": \"Male\",\n  \"identityDocumentNumber\": \"9501015276087\",\n  \"identityDocumentType\": \"National ID\",\n  \"identityDocumentCountry\": \"South Africa\",\n  \"dateOfBirth\": \"1995/01/01\",\n  \"countryOfBirth\": \"South Africa\",\n  \"email\": \"test@test.com\",\n  \"cellPhone\": \"+27000000000\",\n  \"homePhone\": \"+27000000000\",\n  \"workPhone\": \"+27000000000\",\n  \"pysicalAddressLine1\": \"123 Some Street\",\n  \"pysicalAddressLine2\": \"Anytown\",\n  \"pysicalAddressLine3\": \"Anywhere\",\n  \"pysicalAddressCity\": \"Metropolis\",\n  \"pysicalAddressRegion\": \"Gauteng\",\n  \"pysicalAddressCountry\": \"South Africa\",\n  \"pysicalAddressCode\": 2161,\n  \"postalAddressLine1\": \"PO Box 1234\",\n  \"postalAddressLine2\": \"Anytown\",\n  \"postalAddressLine3\": \"Anywhere\",\n  \"postalAddressCity\": \"Metropolis\",\n  \"postalAddressRegion\": \"Gauteng\",\n  \"postalAddressCountry\": \"South Africa\",\n  \"postalAddressCode\": 2161\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/customers",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"customers"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		},
+		{
+			"name": "03 Get Customer by ID",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/customers/9501015276087",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"customers",
+						"9501015276087"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		},
+		{
+			"name": "04 Upload Customer Document",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "RequestedBy",
+						"value": "Test User",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/home/hal/Downloads/Selfie.jpg"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/documents/upload/9501015276087/Selfie",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"documents",
+						"upload",
+						"9501015276087",
+						"Selfie"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		},
+		{
+			"name": "05 Get Customer Document Preview",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "RequestedBy",
+						"value": "Test User",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/home/hal/Downloads/Selfie.jpg"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{url}}/documents/preview/9501015276087/Selfie",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"documents",
+						"preview",
+						"9501015276087",
+						"Selfie"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		},
+		{
+			"name": "06 Create Liveness session",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/customers/liveness/sessioncreate/9501015276087",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"customers",
+						"liveness",
+						"sessioncreate",
+						"9501015276087"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		},
+		{
+			"name": "07 Get Liveness session results",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/customers/liveness/sessionresults/9501015276087/0f6e2354-b219-4ed2-bc88-020b0a75ff38",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"customers",
+						"liveness",
+						"sessionresults",
+						"9501015276087",
+						"0f6e2354-b219-4ed2-bc88-020b0a75ff38"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		},
+		{
+			"name": "08 Verify Customer",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/customers/verify/9501015276087",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"customers",
+						"verify",
+						"9501015276087"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		},
+		{
+			"name": "09 Update Customer by ID",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "RequestedBy",
+						"value": "Test User",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"manualVerificationRequested\": true,\n    \"manuallyVerified\": true\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/customers/9501015276087",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"customers",
+						"9501015276087"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		},
+		{
+			"name": "10 Delete Customer by ID",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{APIKey}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{OrgId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{url}}/customers/9501015276087",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"customers",
+						"9501015276087"
+					]
+				},
+				"description": "Authenticate the user using AWS Cognito."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "url",
+			"value": "https://api.kyc.qa.tenettechnology.co.za",
+			"type": "string"
+		},
+		{
+			"key": "OrgId",
+			"value": "Request from Apzor",
+			"type": "string"
+		},
+		{
+			"key": "APIKey",
+			"value": "Request from Apzor",
+			"type": "string"
+		}
+	]
+}

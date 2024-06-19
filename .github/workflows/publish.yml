@@ -1,0 +1,113 @@
+name: Build and Deploy
+run-name: Deploy "${{ github.ref_name }}" to ${{ inputs.ENVIRONMENT }} (${{ inputs.AWS_REGION }}) by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      ENVIRONMENT:
+        description: 'Deploy to'
+        type: environment
+        default: dev
+        required: true
+      AWS_REGION:
+        type: choice
+        description: 'AWS region'
+        required: true
+        options:
+          - eu-west-1
+
+env:
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE }}   
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER }}
+  ECS_TASK_DEFINITION: ${{ vars.ECS_TASK_DEFINITION }} 
+  CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ENVIRONMENT }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # - name: Authenticate with private NPM package
+    #   run: echo "//registry.npmjs.org/:_authToken=${{ secrets.ORG_NPM_TOKEN }}" > ./.npmrc
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        role-to-assume: ${{ secrets.AWS_EXECUTION_ROLE }}
+        role-session-name: github-action-session
+        aws-region: ${{ inputs.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Remove Repo envfile
+      run : rm -f .env
+
+    - name: Make envfile
+      run: |        
+        echo APP_NAME=${{ vars.APP_NAME }} >> .env
+        echo AWS_REGION=${{ vars.AWS_REGION }} >> .env
+        echo CONTAINER_NAME=${{ vars.CONTAINER_NAME }} >> .env
+        echo DYNAMODB_ENDPOINT_URL=${{ vars.DYNAMODB_ENDPOINT_URL }} >> .env
+        echo ECR_REPOSITORY=${{ vars.ECR_REPOSITORY }} >> .env
+        echo ECS_CLUSTER=${{ vars.ECS_CLUSTER }} >> .env
+        echo ECS_SERVICE=${{ vars.ECS_SERVICE }} >> .env
+        echo ECS_TASK_DEFINITION=${{ vars.ECS_TASK_DEFINITION }} >> .env
+        echo ENV=${{ vars.ENV }} >> .env
+        echo NODE_ENV=${{ vars.NODE_ENV }} >> .env
+        echo PORT=${{ vars.PORT }} >> .env
+        echo CUSTOMER_TABLE_NAME=${{ vars.CUSTOMER_TABLE_NAME }} >> .env
+        echo AUDIT_TABLE_NAME=${{ vars.AUDIT_TABLE_NAME }} >> .env
+        echo AWS_S3_BUCKET_NAME=${{ vars.AWS_S3_BUCKET_NAME }} >> .env
+        echo AWS_S3_ENDPOINT_URL=${{ vars.AWS_S3_ENDPOINT_URL }} >> .env
+
+    - name: Install dependencies
+      id: npm-install
+      run: npm ci --legacy-peer-deps
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: latest
+      run: |
+        # Build a docker container and
+        # push it to ECR so that it can
+        # be deployed to ECS.
+        # docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --file Dockerfile --build-arg NPM_TOKEN=${{ secrets.ORG_NPM_TOKEN }} .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --file Dockerfile .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Download task definition
+      id: task-def-dl
+      run: |
+        aws ecs describe-task-definition --task-definition ${{ env.ECS_TASK_DEFINITION }} --query taskDefinition > task-definition.json
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: task-definition.json
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
+

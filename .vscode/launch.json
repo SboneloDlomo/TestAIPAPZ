@@ -1,0 +1,54 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug e2e tests",
+            "program": "${workspaceFolder}/node_modules/.bin/jest",
+            "args": [
+                "--runInBand",
+                "--config",
+                "./test/jest-e2e.json"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "windows": {
+                "program": "${workspaceFolder}/node_modules/jest/bin/jest",
+            }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug apz-kyc-api",
+            "console": "integratedTerminal",
+            "program": "${workspaceFolder}/src/main.ts",
+            "runtimeArgs": [
+                "--nolazy",
+                "-r",
+                "ts-node/register",
+                "-r",
+                "tsconfig-paths/register"
+            ],
+            "skipFiles": [
+                "<node_internals>/**/*.js",                
+                "${workspaceRoot}/node_modules/**/*.js",                
+            ],
+            "sourceMaps": true,
+            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceRoot}",            
+            "autoAttachChildProcesses": true    
+        },
+        {
+            "name": "Debug unit tests",
+            "type": "node",
+            "request": "launch",
+            "runtimeArgs": ["--inspect-brk", "${workspaceRoot}/node_modules/.bin/jest", "--runInBand", "--coverage", "false"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        }
+    ]
+}
+
+
+

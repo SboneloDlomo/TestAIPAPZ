@@ -1,0 +1,48 @@
+@startuml
+!include <c4/C4_Container.puml>  
+
+LAYOUT_WITH_LEGEND()
+
+title Container Diagram - APZ-KYC-API
+
+
+Enterprise_Boundary(c0, "3rd Party Organisation") {
+  Container_Ext(organisationApi, "Organisation API", "Manages registration, login, and KYC requests from customers")
+}
+
+Enterprise_Boundary(c1, "APZOR KYC") {
+  Container(apzKycApi, "APZOR KYC API", "Nest.JS REST API", "Receives KYC requests from 3rd party Organisations, processes customer identity verifications, and returns results.")
+  ContainerDb(s3, "AWS S3 Bucket", "File storage", "Stores uploaded customer documents")
+  ContainerDb(dynamoDb, "AWS DynamoDB", "Database", "Stores captured customer data")
+}
+
+Enterprise_Boundary(c2, "APZOR Mobius") {
+  Container_Ext(apzMobiusApi, "APZOR Mobius API", "AWS SAM REST API", "Manages organisations, users, authentication, reporting, data management, and overrides in the APZOR ecosystem.")
+}
+
+Enterprise_Boundary(c3, "3rd Party Provider") {
+  Container_Ext(secureCitizen, "Secure Citizen API", "REST API", "Compares customer info to Home Affairs DB.")
+  Container_Ext(ofac, "OFAC API", "REST API", "Compares customer info to criminal/sanctions DB.")
+  Container_Ext(rekognition, "AWS Rekognition SDK", "SDK", "Performs Liveness check. Performs image and text recognition on National ID, Selfie, and Liveness uploaded images.")
+}
+
+
+Rel_R(organisationApi, apzKycApi, Registers customer)
+Rel_R(organisationApi, apzKycApi, Uploads customer documents)
+Rel_R(organisationApi, apzKycApi, Requests KYC verification)
+Rel_L(apzKycApi, organisationApi, Returns KYC results)
+
+Rel_U(apzKycApi, dynamoDb, Writes customer data)
+Rel_D(dynamoDb, apzKycApi, Reads customer data)
+Rel_U(apzKycApi, s3, Writes customer documents)
+Rel_D(s3, apzKycApi, Reads customer documents)
+
+Rel_D(apzKycApi, secureCitizen, Requests National ID verification)
+Rel_U(secureCitizen, apzKycApi, Returns results)
+Rel_D(apzKycApi, ofac, Requests crimnal/sanctions list)
+Rel_U(ofac, apzKycApi, Returns results)
+Rel_D(apzKycApi, rekognition, Requests image recognition analysis)
+Rel_U(rekognition, apzKycApi, Returns results)
+
+Rel_L(apzMobiusApi, apzKycApi, KYC status manual override)
+@enduml

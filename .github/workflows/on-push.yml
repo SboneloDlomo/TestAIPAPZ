@@ -1,0 +1,48 @@
+name: Push
+
+on:
+  push:
+    branches:
+      - hotfix/*
+      - bugfix/*
+      - feature/*
+      - spike/*
+      - master
+
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+      
+      - name: Install node
+        id: install
+        run: npm ci --legacy-peer-deps
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - name: Lint
+        id: lint
+        run: npm run lint
+
+      - name: Unit tests
+        id: unit-tests
+        run: npm test
+
+      - name: Test coverage
+        id: test-coverage
+        run: |
+          cp .//.env.sample .//.env
+          npm run test:cov
+
+      - name: Build
+        id: build
+        run: npm run build

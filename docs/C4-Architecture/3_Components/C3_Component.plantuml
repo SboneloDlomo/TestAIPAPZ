@@ -1,0 +1,106 @@
+@startuml
+skinparam Style strictuml
+
+title
+  APZ-KYC-API - Sequence Diagram
+end title
+
+control orgApi as "Organisation API"
+control kycApi as "APZ-KYC-API" #lightblue
+database dynamoDB as "AWS DynamoDB" #lightblue
+database s3 as "AWS S3 Bucket" #lightblue
+control rekognition as "AWS Rekognition SDK"
+control secureCitizen as "Secure Citizen API"
+control ofac as "OFAC API"
+
+activate orgApi
+orgApi -> orgApi : Registers new customer
+orgApi -> kycApi : Calls create customer endpoint
+activate kycApi
+kycApi -> kycApi : Authenticates organisation
+kycApi -> kycApi : Validates customer input
+kycApi -> dynamoDB : Writes customer data
+activate dynamoDB
+deactivate dynamoDB
+kycApi -> orgApi : Returns status
+deactivate kycApi
+
+orgApi -> orgApi : Customer prompted to upload ID doc
+
+
+orgApi -> kycApi : Calls upload doc endpoint
+activate kycApi
+kycApi -> s3 : Uploads ID doc
+activate s3
+deactivate s3
+kycApi -> dynamoDB : Writes ID doc data
+activate dynamoDB
+deactivate dynamoDB
+kycApi -> orgApi : Returns status
+deactivate kycApi
+
+orgApi -> orgApi : Customer prompted for Liveness
+
+orgApi -> kycApi : Calls liveness endpoint
+activate kycApi
+kycApi -> rekognition : Requests Session ID
+activate rekognition
+rekognition -> kycApi : Returns Session ID
+deactivate rekognition
+kycApi -> orgApi : Returns Session ID
+deactivate kycApi
+orgApi -> orgApi : Liveness performed
+orgApi -> kycApi : Calls liveness result endpoint
+activate kycApi
+kycApi -> rekognition : Requests Liveness result
+activate rekognition
+rekognition -> kycApi : Returns Liveness result
+deactivate rekognition
+kycApi -> s3 : Uploads liveness reference image
+activate s3
+deactivate s3
+kycApi -> orgApi : Returns status
+deactivate kycApi
+
+orgApi -> orgApi : Customer prompted to auto-verify
+
+orgApi -> kycApi : Calls verify endpoint
+activate kycApi
+kycApi -> kycApi : Verifies all docs uploaded
+kycApi -> kycApi : Verifies ID info
+kycApi -> secureCitizen : Verifies ID info
+activate secureCitizen
+secureCitizen -> kycApi : Returns verification results
+deactivate secureCitizen
+alt Government image returned by Secure Citizen
+  kycApi -> s3 : Uploads government image on file
+  activate s3
+  deactivate s3
+  kycApi -> dynamoDB : Writes government image data
+  activate dynamoDB
+  deactivate dynamoDB
+end
+kycApi -> rekognition : Performs text recognition on ID doc
+activate rekognition
+kycApi -> rekognition : Performs facial recognition between ID doc and Selfie
+kycApi -> rekognition : Performs facial recognition between ID doc and Liveness reference image
+alt Government image exists
+  kycApi -> rekognition : Performs facial recognition between ID doc and Government image
+end
+rekognition -> kycApi : Returns results
+deactivate rekognition
+kycApi -> ofac : Performs criminal record/sanctions search
+activate ofac
+ofac -> kycApi : Returns results
+deactivate ofac
+
+kycApi -> kycApi : Calculates KYC progress and status
+kycApi -> dynamoDB : Updates customer record
+activate dynamoDB
+deactivate dynamoDB
+
+kycApi -> orgApi : Returns status and results
+deactivate kycApi
+
+deactivate orgApi
+@enduml

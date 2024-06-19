@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  localstack:
+    image: localstack/localstack:0.13.3
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      - SERVICES=sns,sqs,dynamodb,secretsmanager,s3
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - DEFAULT_REGION=eu-west-1
+    volumes:
+      - ~/tmp/localstack:/tmp/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - apz_kyc
+  localstack-setup:
+    image: cgswong/aws
+    depends_on:
+      - localstack
+    volumes:
+      - ./scripts/resources/:/resources/
+      - ./scripts/init-localstack.sh:/entrypoint.sh
+    entrypoint: [ "/entrypoint.sh" ]
+    environment:
+      - LOCALSTACK=localstack
+    networks:
+      - apz_kyc
+
+networks:
+  apz_kyc:
+    driver: "bridge"

@@ -1,0 +1,45 @@
+@startuml
+!include <c4/C4_Context.puml>  
+!include <office/Users/user.puml>
+
+LAYOUT_WITH_LEGEND()
+
+title System Context Diagram - APZ-KYC-API
+
+
+Enterprise_Boundary(c0, "3rd Party Organisation") {
+  System_Ext(organisationUi, "Organisation UI", "Provides registration and login pages to customers")
+  System_Ext(organisationApi, "Organisation API", "Manages registration, login, and KYC requests from customers")
+  Person_Ext(customer, Customer ,"\n Responsible for registering and authenticating on external service." )
+}
+
+Enterprise_Boundary(c1, "APZOR KYC") {
+  System(apzKycApi, "APZOR KYC API", "Receives KYC requests from 3rd party Organisations, processes customer identity verifications, and returns results.")
+}
+
+Enterprise_Boundary(c2, "APZOR Mobius") {
+  System_Ext(apzMobiusUi, "APZOR Mobius UI", "Provides portal to Organisation Admins and APZOR Admins to view and manage manual processes in the APZOR ecosystem.")
+  System_Ext(apzMobiusApi, "APZOR Mobius API", "Manages organisations, users, authentication, reporting, data management, and overrides in the APZOR ecosystem.")
+  Person_Ext(orgAdmin, Organisation Admin ,"\n Responsible for manually verifying failed or problematic KYC applications." )
+  Person_Ext(apzorAdmin, APZOR Admin ,"\n Responsible for troubleshooting, support, and monitoring of KYC processes." )
+}
+
+Enterprise_Boundary(c3, "3rd Party Provider") {
+  System_Ext(externalVerificationApi, "External Verification API(s)", "Provides additional verification and validation to APZOR KYC service.")
+}
+
+Rel_D(customer, organisationUi, "Captures registration data")
+Rel_D(organisationUi, organisationApi, "Registers customer")
+Rel_U(organisationApi, organisationUi, "Validates phone and email")
+Rel_D(organisationApi, apzKycApi, "Requests KYC")
+
+Rel_U(apzKycApi, organisationApi, "Returns KYC results")
+
+Rel_U(apzMobiusApi, apzKycApi, "Updates and/or overrides")
+Rel_U(apzMobiusUi, apzMobiusApi, "Interfaces with")
+Rel_R(apzorAdmin, apzMobiusUi, "Views and overrides KYC status")
+Rel_L(orgAdmin, apzMobiusUi, "Views and overrides KYC status")
+
+Rel_R(apzKycApi, externalVerificationApi, "Verifies customer data")
+Rel_L(externalVerificationApi, apzKycApi, "Returns verfication results")
+@enduml
